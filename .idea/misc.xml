@@ -3,10 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ic_edit.xml" value="0.209375" />
         <entry key="app/src/main/res/drawable/ic_no.xml" value="0.209375" />
         <entry key="app/src/main/res/drawable/ic_no_small.xml" value="0.209375" />
         <entry key="app/src/main/res/drawable/ic_yes.xml" value="0.209375" />
         <entry key="app/src/main/res/drawable/ic_yes_small.xml" value="0.209375" />
+        <entry key="app/src/main/res/layout/activity_add_student.xml" value="0.18" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.178125" />
         <entry key="app/src/main/res/layout/fragment_attendance.xml" value="0.19322916666666667" />
         <entry key="app/src/main/res/layout/fragment_student.xml" value="0.19322916666666667" />

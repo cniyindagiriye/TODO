@@ -1,95 +1,125 @@
 package com.example.attendance;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.attendance.fragments.AttendanceFragment;
-import com.example.attendance.fragments.StudentFragment;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.attendance.adapters.AttendanceAdapter;
 import com.example.attendance.models.Student;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    Fragment fragment;
+    AttendanceAdapter attendanceAdapter;
     List<Student> studentList;
+    TextView txtPending, txtCompleted;
+    private static final String JSON_URL = "https://cse-contacts.herokuapp.com/api/v1/contacts";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         studentList = new ArrayList<>();
+        attendanceAdapter = new AttendanceAdapter(studentList, this);
         loadStudents();
-        fragment = new AttendanceFragment();
-        Button btnPresence = findViewById(R.id.btnAttendance);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+        recyclerView.setAdapter(attendanceAdapter);
+        recyclerView.setVerticalScrollBarEnabled(true);
+        Button btnAdd  = findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(view -> {
+            Intent intent = new Intent(this, AddStudentActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
-        btnPresence.setOnClickListener(view -> onTopNavSelected(btnPresence));
-        Button btnStudents = findViewById(R.id.btnStudents);
-        btnStudents.setOnClickListener(view -> onTopNavSelected(btnStudents));
-
-        onTopNavSelected(btnPresence);
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    public void onTopNavSelected(View item) {
-        switch (item.getId()) {
-            case R.id.btnAttendance:
-                fragment = new AttendanceFragment(studentList);
-                break;
-            case R.id.btnStudents:
-                fragment = new StudentFragment(studentList);
-                break;
-            default:
-                return;
-        }
-        if (fragment.isAdded()) {
-            return;
-        }
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frmContainer, fragment, fragment.getClass().getSimpleName()).addToBackStack(null).commit();
+        txtCompleted = findViewById(R.id.txtCompleted);
+        txtPending = findViewById(R.id.txtPending);
     }
 
     public void loadStudents () {
-        Student student = new Student();
-        student.regNumber = "219000001";
-        student.firstName = "Mia";
-        student.lastName = "Benitha";
-        student.status = false;
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
-        studentList.add(student);
+        ProgressDialog progress = new ProgressDialog(this);
+        progress.setMessage("Loading...");
+        progress.setCancelable(true);
+        progress.show();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, JSON_URL, new Response.Listener<String>() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void onResponse(String response) {
+                progress.dismiss();
+
+                try {
+                    //getting the whole json object from the response
+                    JSONArray contactArray = new JSONArray(response);
+                    Log.d("Data ", contactArray.toString());
+
+                    //now looping through all the elements of the json array
+                    int done = 0;
+                    int pending = 0;
+                    studentList.clear();
+                    for (int i = 0; i < contactArray.length(); i++) {
+
+                        JSONObject contactObject = contactArray.getJSONObject(i);
+
+                        Student student = new Student();
+
+                        student.id = contactObject.getString("id");
+                        student.regNumber = contactObject.getString("phoneNumber");
+                        student.firstName = contactObject.getString("firstName");
+                        student.lastName = contactObject.getString("lastName");
+                        student.status = !contactObject.getString("photo").isEmpty();
+                        studentList.add(student);
+                        if (student.status) {
+                            done++;
+                        } else {
+                            pending++;
+                        }
+                    }
+                    Collections.reverse(studentList);
+                    attendanceAdapter.setStudents(studentList);
+                    attendanceAdapter.notifyDataSetChanged();
+
+                    txtCompleted.setText(String.valueOf(done) + " completed");
+                    txtPending.setText(String.valueOf(pending) + " pending");
+
+                } catch (JSONException e) {
+                    progress.dismiss();
+                    e.printStackTrace();
+                }
+            }
+        },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progress.dismiss();
+                        //displaying the error in toast if occur
+                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("Error :",error.toString());
+                    }
+                });
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
     }
 }
