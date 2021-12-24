@@ -25,7 +25,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.attendance.EditStudentActivity;
+import com.example.attendance.EditTaskActivity;
 import com.example.attendance.MainActivity;
 import com.example.attendance.R;
 import com.example.attendance.constants.Init;
@@ -38,12 +38,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AttendanceAdapter  extends RecyclerView.Adapter<AttendanceAdapter.ViewHolder> {
+public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
     List<Student> students;
     public static AppCompatActivity activity;
-    public AttendanceAdapter(List<Student> students, AppCompatActivity activity) {
+    public TaskAdapter(List<Student> students, AppCompatActivity activity) {
         this.students = students;
-        AttendanceAdapter.activity = activity;
+        TaskAdapter.activity = activity;
     }
 
     public void setStudents(List<Student> students) {
@@ -53,7 +53,7 @@ public class AttendanceAdapter  extends RecyclerView.Adapter<AttendanceAdapter.V
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.list_attendance, parent, false);
+        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.list_task, parent, false);
         return new ViewHolder(view);
     }
 
@@ -71,12 +71,17 @@ public class AttendanceAdapter  extends RecyclerView.Adapter<AttendanceAdapter.V
         TextView txtRegNumber;
         CheckBox chkAction;
         ImageButton btnEdit, btnDelete;
+        TextView txtCompleted, txtPending;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtRegNumber = itemView.findViewById(R.id.txtRegNumber);
             chkAction = itemView.findViewById(R.id.chkAction);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            txtPending = TaskAdapter.activity.findViewById(R.id.txtPending);
+            txtCompleted = TaskAdapter.activity.findViewById(R.id.txtCompleted);
+            txtCompleted.setText(String.valueOf(Init.done) + " completed");
+            txtPending.setText(String.valueOf(Init.pending) + " pending");
         }
         public void bind(final Student student){
             txtRegNumber.setText(student.regNumber);
@@ -136,9 +141,9 @@ public class AttendanceAdapter  extends RecyclerView.Adapter<AttendanceAdapter.V
 
             btnEdit.setOnClickListener(view -> {
                 Init.student = student;
-                Intent intent = new Intent(view.getContext(), EditStudentActivity.class);
+                Intent intent = new Intent(view.getContext(), EditTaskActivity.class);
                 view.getContext().startActivity(intent);
-                AttendanceAdapter.activity.finish();
+                TaskAdapter.activity.finish();
             });
             btnDelete.setOnClickListener(view -> {
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {

@@ -20,7 +20,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.attendance.adapters.AttendanceAdapter;
+import com.example.attendance.adapters.TaskAdapter;
+import com.example.attendance.constants.Init;
 import com.example.attendance.models.Student;
 
 import org.json.JSONArray;
@@ -32,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    AttendanceAdapter attendanceAdapter;
+    TaskAdapter taskAdapter;
     List<Student> studentList;
     TextView txtPending, txtCompleted;
     private static final String JSON_URL = "https://cse-contacts.herokuapp.com/api/v1/contacts";
@@ -41,22 +42,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         studentList = new ArrayList<>();
-        attendanceAdapter = new AttendanceAdapter(studentList, this);
+        taskAdapter = new TaskAdapter(studentList, this);
         loadStudents();
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
-        recyclerView.setAdapter(attendanceAdapter);
+        recyclerView.setAdapter(taskAdapter);
         recyclerView.setVerticalScrollBarEnabled(true);
         Button btnAdd  = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(view -> {
-            Intent intent = new Intent(this, AddStudentActivity.class);
+            Intent intent = new Intent(this, AddTaskActivity.class);
             startActivity(intent);
             finish();
         });
 
         txtCompleted = findViewById(R.id.txtCompleted);
         txtPending = findViewById(R.id.txtPending);
+        txtCompleted.setText(String.valueOf(Init.done) + " completed");
+        txtPending.setText(String.valueOf(Init.pending) + " pending");
     }
 
     public void loadStudents () {
@@ -76,8 +79,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Data ", contactArray.toString());
 
                     //now looping through all the elements of the json array
-                    int done = 0;
-                    int pending = 0;
+                    Init.done = 0;
+                    Init.pending = 0;
                     studentList.clear();
                     for (int i = 0; i < contactArray.length(); i++) {
 
@@ -92,18 +95,14 @@ public class MainActivity extends AppCompatActivity {
                         student.status = !contactObject.getString("photo").isEmpty();
                         studentList.add(student);
                         if (student.status) {
-                            done++;
+                            ++Init.done;
                         } else {
-                            pending++;
+                            ++Init.pending;
                         }
                     }
                     Collections.reverse(studentList);
-                    attendanceAdapter.setStudents(studentList);
-                    attendanceAdapter.notifyDataSetChanged();
-
-                    txtCompleted.setText(String.valueOf(done) + " completed");
-                    txtPending.setText(String.valueOf(pending) + " pending");
-
+                    taskAdapter.setStudents(studentList);
+                    taskAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     progress.dismiss();
                     e.printStackTrace();

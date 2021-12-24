@@ -23,7 +23,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EditStudentActivity extends AppCompatActivity {
+public class EditTaskActivity extends AppCompatActivity {
 
     EditText txtFirstName, txtRegNumber, txtLastName;
     Button btnSave;
@@ -33,7 +33,7 @@ public class EditStudentActivity extends AppCompatActivity {
         if (Init.student == null) {
             finish();
         }
-        setContentView(R.layout.activity_add_student);
+        setContentView(R.layout.activity_add_task);
         txtFirstName = findViewById(R.id.txtFirstName);
         txtFirstName.setText(Init.student.firstName);
         txtLastName = findViewById(R.id.txtLastName);
@@ -67,7 +67,7 @@ public class EditStudentActivity extends AppCompatActivity {
                 progress.dismiss();
                 Log.d("Response", response.toString());
                 Toast.makeText(getApplicationContext(),"Task: " + reg + " updated",Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(EditStudentActivity.this, MainActivity.class);
+                Intent intent = new Intent(EditTaskActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }

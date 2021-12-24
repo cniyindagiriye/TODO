@@ -13,10 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Attendance" >
         <activity
-            android:name=".EditStudentActivity"
+            android:name=".EditTaskActivity"
             android:exported="false" />
         <activity
-            android:name=".AddStudentActivity"
+            android:name=".AddTaskActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
